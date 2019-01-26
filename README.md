@@ -37,7 +37,7 @@ Because timekeeper is a factory that produces timers, it will play nice with tes
 
 The name of the calling functin and it's start and stop times will be written to a .json file at the end of all tests.
 
-## Multiple Timers, annotated times, and function versions.
+## Multiple Timers, annotated times, and test versions.
 
 Multiple timers are not problem:
 
@@ -66,3 +66,16 @@ Multiple timers are not problem:
 The note dictionary is also a good place to store data that may inform why a particular test was slow such as the @given values from Hypothesis.
 
 The version wrapper is a utility function to help keep track of when your tests change. This helps isolate changes in performance that occur due to your tests being changes vs. those that occur from changes in the underlying app being tested.
+
+
+## Running tests on pytest_timekeeper
+
+Pipenv is reccomended
+
+```bash
+git clone https://github.com/kajuberdut/pytest-timekeeper.git
+pipenv install --dev
+pipenv shell
+pip install -e .
+pytest
+```
