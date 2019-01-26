@@ -10,7 +10,7 @@ class Timer:
     test_version: int
     start_time_ns: int = 0
     end_time_ns: int = 0
-    vars: Dict[str, Any] = dataclasses.field(default_factory=dict)
+    note: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
     def start(self):
         if self.start_time_ns != 0:
