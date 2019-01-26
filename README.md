@@ -67,6 +67,30 @@ The note dictionary is also a good place to store data that may inform why a par
 
 The version wrapper is a utility function to help keep track of when your tests change. This helps isolate changes in performance that occur due to your tests being changes vs. those that occur from changes in the underlying app being tested.
 
+Here is an example of what the output would look like for the above test.
+
+```json
+[
+    {
+        "test_name": "test_timer",
+        "test_version": 2,
+        "start_time_ns": 1548480457301760120,
+        "end_time_ns": 1548480457301806942,
+        "note": {
+            "area": "Connect+Query+Close"
+        }
+    },
+    {
+        "test_name": "test_timer",
+        "test_version": 2,
+        "start_time_ns": 1548480457301791691,
+        "end_time_ns": 1548480457301800596,
+        "note": {
+            "area": "Query"
+        }
+    }
+]
+```
 
 ## Running tests on pytest_timekeeper
 
