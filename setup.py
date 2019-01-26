@@ -19,7 +19,7 @@ setup(
     description=("Pytest timeing framework"),
     license="BSD",
     packages=find_packages(),
-    long_description=read("README"),
+    long_description=read("README.md"),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: BSD License",
