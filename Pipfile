@@ -4,14 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-uvicorn = "*"
 ujson = "*"
-asyncpg = "*"
-tenacity = "*"
-uvloop = "*"
-starlette = "*"
 requests = "*"
-
 
 [dev-packages]
 black = "*"
