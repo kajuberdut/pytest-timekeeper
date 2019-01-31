@@ -35,7 +35,7 @@ Here's a test showing the basic functionality:
 
 Because timekeeper is a factory that produces timers, it will play nice with tests that run multiple times such as tests that have parameterized fixtures or tests using Hypothesis to generate test data.
 
-The name of the calling functin and it's start and stop times will be written to a .json file at the end of all tests.
+The name of the calling function and it's start and stop times will be written to a .json file in the current working directory at the end of all tests by default. To customize this see [Customizing Output](#customizing-output)
 
 ## Multiple Timers, annotated times, and test versions.
 
@@ -90,6 +90,52 @@ Here is an example of what the output would look like for the above test.
         }
     }
 ]
+```
+
+## Customizing Output
+
+pytest_timekeeper will call the finalize() method of a special Writer object after all tests have completed. This defaults to a a writer that simply creates a json file in the current working directory. There are writers included for Posting to a web address and printing in the pytest final report, or you can create your own Writer.
+
+
+To use a custom writer simply subclass the pytest_timekeeper.Writer class:
+
+```python
+from pytest_timekeeper import Writer, set_writer
+
+
+class PrintWriter(Writer):
+    def finalize(self, timers):
+        for t in timers:
+            print(t)
+
+
+printer = PrintWriter()
+set_writer(printer)
+
+```
+
+Now run pytest with the -s flag and you will see the timer results of your tests printed to STDOUT.
+
+```python
+
+    import time
+    from pytest_timekeeper.utility import version
+
+    @version(2)
+    def test_timer(timekeeper):
+        outer_timer = timekeeper() # This timer times the entire setup and teardown.
+        inner_timer = timekeeper() # This timer times a single function.
+        # timer.note is a dict which can be used to store additional information
+        # timer.note is written with each timers record at the end of tests
+        outer_timer.note["area"] = "Connect+Query+Close"
+        inner_timer.note["area"] = "Query"
+        outer_timer.start()
+        print("Connect to a database")
+        inner_timer.start()
+        print("Query the database.")
+        inner_timer.stop()
+        print("Close connection.")
+        outer_timer.stop()
 ```
 
 ## Running tests on pytest_timekeeper

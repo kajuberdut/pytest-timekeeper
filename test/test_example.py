@@ -1,4 +1,3 @@
-import time
 from pytest_timekeeper.utility import version
 
 

@@ -41,11 +41,7 @@ class Serialize(Writer):
 
 
 def default_json_file():
-    p = Path().cwd() / "test" / "times"
-    p.mkdir(parents=True, exist_ok=True)
-    filename = f"execution_times_{time.time()}.json"
-    final = p / filename
-    return final
+    return Path().cwd() / f"execution_times_{time.time()}.json"
 
 
 @dataclasses.dataclass  # type: ignore
@@ -55,7 +51,7 @@ class JsonWriter(Serialize):
 
     Inputs:
     filepath (optional): a writeable filepath.
-        Default: Path().cdw() / "test/times/execution_times_{timestamp}.json
+        Default: Path().cdw()/execution_times_{timestamp}.json
     serializer (optional): a callable able to serialize a object of type List[Dict]
         Default: json.dumps
     """

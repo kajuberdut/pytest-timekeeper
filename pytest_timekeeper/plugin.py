@@ -4,12 +4,14 @@ import pytest
 
 import dataclasses
 from pytest_timekeeper.timer import Timer
-from pytest_timekeeper.writers import JsonWriter, Writer
+from pytest_timekeeper.writers import Writer
+
+from pytest_timekeeper import get_writer
 
 
 @dataclasses.dataclass
 class TimeKeeper:
-    writer: Writer = dataclasses.field(default_factory=JsonWriter)
+    writer: Writer = dataclasses.field(default_factory=get_writer)
     timers: List[Timer] = dataclasses.field(default_factory=list)
 
     def get_timer(self, test_name, test_version):
