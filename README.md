@@ -39,7 +39,7 @@ The name of the calling function and it's start and stop times will be written t
 
 ## Multiple Timers, annotated times, and test versions.
 
-Multiple timers are not problem:
+Multiple timers in a single function are supported. Use the timer.note dictionary to annotate the purpose of each timer:
 
 ```python
 
@@ -63,11 +63,11 @@ Multiple timers are not problem:
         outer_timer.stop()
 ```
 
-The note dictionary is also a good place to store data that may inform why a particular test was slow such as the @given values from Hypothesis.
+The note dictionary is also a good place to store data that might help you decide in later analysis why an instance of a test was slow such as the @given values when using Hypothesis.
 
-The version wrapper is a utility function to help keep track of when your tests change. This helps isolate changes in performance that occur due to your tests being changes vs. those that occur from changes in the underlying app being tested.
+The version wrapper is a utility function to help keep track of when your tests change. This helps isolate changes in performance that occur due to your tests being changes from those changes that occur in the underlying app being tested.
 
-Here is an example of what the output would look like for the above test.
+Here is an example of what the default json output would look like for the above test.
 
 ```json
 [
@@ -94,7 +94,7 @@ Here is an example of what the output would look like for the above test.
 
 ## Customizing Output
 
-pytest_timekeeper will call the finalize() method of a special Writer object after all tests have completed. This defaults to a a writer that simply creates a json file in the current working directory. There are writers included for Posting to a web address and printing in the pytest final report, or you can create your own Writer.
+After all tests are run pytest_timekeeper call the finalize() method of a whatever Writer object is set. This defaults to pytest_timekeeper.writers.JsonWriter. pytest_timekeeper has several built-in writers.
 
 Here is an example of using the built in PostWriter to post results as json to a web address.
 
@@ -105,7 +105,7 @@ poster = PostWriter(post_address="http://localhost")
 set_writer(poster)
 ```
 
-To use a custom writer simply subclass the pytest_timekeeper.Writer class:
+You can also create your own Writer by subclassing pytest_timekeeper.Writer:
 
 ```python
 from pytest_timekeeper import Writer, set_writer
