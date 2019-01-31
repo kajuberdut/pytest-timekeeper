@@ -1,25 +1,15 @@
-import json
-import time
-from pathlib import Path
 from typing import List
 
 import pytest
 
 import dataclasses
 from pytest_timekeeper.timer import Timer
-
-
-def time_log_name():
-    p = Path().cwd() / "test" / "times"
-    p.mkdir(parents=True, exist_ok=True)
-    filename = f"execution_times_{time.time()}.json"
-    final = p / filename
-    return final
+from pytest_timekeeper.writers import JsonWriter, Writer
 
 
 @dataclasses.dataclass
 class TimeKeeper:
-    filepath: str = dataclasses.field(default_factory=time_log_name)
+    writer: Writer = dataclasses.field(default_factory=JsonWriter)
     timers: List[Timer] = dataclasses.field(default_factory=list)
 
     def get_timer(self, test_name, test_version):
@@ -27,17 +17,15 @@ class TimeKeeper:
         self.timers.append(timer)
         return timer
 
-    def write_times(self):
-
-        with open(self.filepath, "w") as fh:
-            json.dump([dataclasses.asdict(t) for t in self.timers], fh)
+    def finalize(self):
+        self.writer.finalize(self.timers)
 
 
 @pytest.yield_fixture(scope="session")
 def keeper():
     k = TimeKeeper()
     yield k
-    k.write_times()
+    k.finalize()
 
 
 @pytest.fixture(scope="function")
