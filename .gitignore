@@ -115,3 +115,5 @@ config.json
 #Log
 log.txt
 */times/*.json
+
+psutil
