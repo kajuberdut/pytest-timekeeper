@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -84,4 +84,4 @@ class PostWriter(Writer):
 
     def finalize(self, timers: List[Timer]):
         serialized = self.serializer([dataclasses.asdict(t) for t in timers])
-        requests.post(self.post_address, json=serialized)
+        r = requests.post(self.post_address, json=serialized)
