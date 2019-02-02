@@ -29,7 +29,7 @@ Here's a test showing the basic functionality:
 
 Because timekeeper is a factory that produces timers, it will play nice with tests that run multiple times such as tests that have parameterized fixtures or tests using Hypothesis to generate test data.
 
-The name of the calling function and it's start and stop times will be written to a .json file in the current working directory at the end of all tests by default. To customize this see [Customizing Output](#customizing-output)
+The name of the calling function, and it's start and stop times, any notes you add, and optional system information, will be written to the configured weriter the end of all tests by default. To customize this see [Customizing Output](#customizing-output)
 
 ## Multiple Timers, annotated times, and test versions.
 
@@ -61,30 +61,7 @@ The note dictionary is also a good place to store data that might help you decid
 
 The version wrapper is a utility function to help keep track of when your tests change. This helps isolate changes in performance that occur due to your tests being changed from those changes that occur in the underlying app being tested.
 
-Here is an example of what the default json output would look like for the above test.
 
-```json
-[
-    {
-        "test_name": "test_timer",
-        "test_version": 2,
-        "start_time_ns": 1548480457301760120,
-        "end_time_ns": 1548480457301806942,
-        "note": {
-            "area": "Connect+Query+Close"
-        }
-    },
-    {
-        "test_name": "test_timer",
-        "test_version": 2,
-        "start_time_ns": 1548480457301791691,
-        "end_time_ns": 1548480457301800596,
-        "note": {
-            "area": "Query"
-        }
-    }
-]
-```
 
 ## Customizing Output
 
@@ -103,7 +80,7 @@ def pytest_timekeeper_add_writer():
 
 You can also create your own Writer by subclassing pytest_timekeeper.Writer:
 
-###Note: pytest_timekeeper_set_writer overwrites the default writer while pytest_timekeeper_add_writer adds additional writers called after the default (or last set writer).
+### Note: pytest_timekeeper_set_writer overwrites the default writer while pytest_timekeeper_add_writer adds additional writers called after the default (or last set writer).
 
 ```python
 from pytest_timekeeper import Writer, set_writer
