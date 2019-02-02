@@ -80,7 +80,7 @@ def pytest_timekeeper_add_writer():
 
 You can also create your own Writer by subclassing pytest_timekeeper.Writer:
 
-### Note: pytest_timekeeper_set_writer overwrites the default writer while pytest_timekeeper_add_writer adds additional writers called after the default (or last set writer).
+**Note:** pytest_timekeeper_set_writer overwrites the default writer while pytest_timekeeper_add_writer adds additional writers called after the default (or last set writer).
 
 ```python
 from pytest_timekeeper import Writer, set_writer
