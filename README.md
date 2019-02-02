@@ -9,12 +9,6 @@ Install using pip:
 ```bash
 pip install git+https://github.com/kajuberdut/pytest-timekeeper.git
 ```
-
-Enable the fixture explicitly in your tests or conftest.py (not required when using setuptools entry points):
-
-```python
-    pytest_plugins = ['pytest_timekeeper']
-```
                       
 ## Basic Usage
 
@@ -65,7 +59,7 @@ Multiple timers in a single function are supported. Use the timer.note dictionar
 
 The note dictionary is also a good place to store data that might help you decide in later analysis why an instance of a test was slow such as the @given values when using Hypothesis.
 
-The version wrapper is a utility function to help keep track of when your tests change. This helps isolate changes in performance that occur due to your tests being changes from those changes that occur in the underlying app being tested.
+The version wrapper is a utility function to help keep track of when your tests change. This helps isolate changes in performance that occur due to your tests being changed from those changes that occur in the underlying app being tested.
 
 Here is an example of what the default json output would look like for the above test.
 
@@ -94,31 +88,35 @@ Here is an example of what the default json output would look like for the above
 
 ## Customizing Output
 
-After all tests are run pytest_timekeeper call the finalize() method of a whatever Writer object is set. This defaults to pytest_timekeeper.writers.JsonWriter. pytest_timekeeper has several built-in writers.
+After all tests are run pytest_timekeeper call the finalize() method of any Writer object that have been added through hooks in conftest.py. By defaults a writer is set to output to the pytest summary report. However, pytest_timekeeper has several built-in writers and supports you writing your own.
 
 Here is an example of using the built in PostWriter to post results as json to a web address.
 
 ```python
 from pytest_timekeeper.writers import PostWriter
 
-poster = PostWriter(post_address="http://localhost")
-set_writer(poster)
+
+def pytest_timekeeper_add_writer():
+    poster = PostWriter(post_address="http://localhost")
+    return poster
 ```
 
 You can also create your own Writer by subclassing pytest_timekeeper.Writer:
+
+###Note: pytest_timekeeper_set_writer overwrites the default writer while pytest_timekeeper_add_writer adds additional writers called after the default (or last set writer).
 
 ```python
 from pytest_timekeeper import Writer, set_writer
 
 
-class PrintWriter(Writer):
-    def finalize(self, timers):
-        for t in timers:
-            print(t)
+def pytest_timekeeper_set_writer():
+    class PrintWriter(Writer):
+        def finalize(self, timers: List[Timer]):
+            for t in timers:
+                print(t)
 
-
-printer = PrintWriter()
-set_writer(printer)
+    writer = PrintWriter()
+    return writer
 
 ```
 
