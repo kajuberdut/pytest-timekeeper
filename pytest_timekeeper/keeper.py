@@ -25,9 +25,11 @@ class TimeKeeper:
         self._monitor.start()
 
     def stop_monitor(self):
-        self._monitor.stop()
+        if self._monitor:
+            self._monitor.stop()
 
     def finalize(self):
+        self.stop_monitor()
         writer = self._config.hook.pytest_timekeeper_set_writer()
         writers = [writer] + self._config.hook.pytest_timekeeper_add_writer()
         for w in writers:
