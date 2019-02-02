@@ -77,18 +77,3 @@ class Monitor:
         while not self.queue.empty():
             self.state.append(self.queue.get())
         self.process.join()
-
-
-if __name__ == "__main__":
-    m = Monitor()
-
-    m.start()
-
-    start = time.time()
-    time.sleep(15)
-    print(time.time() - start)
-
-    m.stop()
-
-    print(m.sys_info)
-    print(m.state)

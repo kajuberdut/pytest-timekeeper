@@ -2,12 +2,12 @@ import ujson as json
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable
 
 import requests
 
 import dataclasses
-from pytest_timekeeper.timer import Timer
+from pytest_timekeeper.keeper import TimeKeeper
 
 
 class Writer(ABC):
@@ -17,7 +17,7 @@ class Writer(ABC):
     """
 
     @abstractmethod
-    def finalize(self, timers: List[Timer]):
+    def finalize(self, keeper: TimeKeeper):
         pass
 
 
@@ -34,8 +34,8 @@ class Serialize(Writer):
     filepath: str
     serializer: Callable
 
-    def finalize(self, timers: List[Timer]):
-        serialized = self.serializer([dataclasses.asdict(t) for t in timers])
+    def finalize(self, keeper: TimeKeeper):
+        serialized = self.serializer([dataclasses.asdict(t) for t in keeper.timers])
         with open(self.filepath, "w") as fh:
             fh.write(serialized)
 
@@ -65,9 +65,10 @@ class PytestReport(Writer):
     A writer that produces a pytest report after all tests have completed.
     """
 
-    def finalize(self, timers: List[Timer]):
-        # TODO make this do something
-        pass
+    def finalize(self, keeper: TimeKeeper):
+        for timer in keeper.timers:
+            line_string = json.dumps(timer.asdict())
+            keeper.report_lines = line_string
 
 
 @dataclasses.dataclass  # type: ignore
@@ -82,6 +83,7 @@ class PostWriter(Writer):
     post_address: str
     serializer: Callable = json.dumps
 
-    def finalize(self, timers: List[Timer]):
-        serialized = self.serializer([dataclasses.asdict(t) for t in timers])
+    def finalize(self, keeper: TimeKeeper):
+        serialized = self.serializer([dataclasses.asdict(t) for t in keeper.timers])
         r = requests.post(self.post_address, json=serialized)
+        keeper.report_lines(f"[{r.status_code}] Post to {self.post_address}")

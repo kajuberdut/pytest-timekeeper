@@ -39,6 +39,13 @@ def pytest_timekeeper_set_monitor():
     return monitor
 
 
+def pytest_terminal_summary(terminalreporter):
+    config = (
+        terminalreporter.config
+    )  # This can move to a "config" parameter in pytest v4.2 and up.
+    config._timekeeper.report(terminalreporter)
+
+
 @pytest.fixture(scope="function")
 def timekeeper(request):
     f = request.function

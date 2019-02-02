@@ -19,3 +19,6 @@ class Timer:
 
     def stop(self):
         self.end_time_ns = time.time_ns()
+
+    def asdict(self):
+        return dataclasses.asdict(self)
