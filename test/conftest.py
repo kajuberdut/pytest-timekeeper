@@ -1,13 +1,16 @@
-from pytest_timekeeper import Writer, set_writer
+from typing import List
+
+from pytest_timekeeper.timer import Timer
+from pytest_timekeeper.writers import Writer
 
 pytest_plugins = ["pytester"]
 
 
-class PrintWriter(Writer):
-    def finalize(self, timers):
-        for t in timers:
-            print(t)
+def pytest_timekeeper_set_writer():
+    class PrintWriter(Writer):
+        def finalize(self, timers: List[Timer]):
+            for t in timers:
+                print(t)
 
-
-printer = PrintWriter()
-set_writer(printer)
+    writer = PrintWriter()
+    return writer

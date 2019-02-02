@@ -65,8 +65,9 @@ class PytestReport(Writer):
     A writer that produces a pytest report after all tests have completed.
     """
 
-    # TODO make this do something
-    pass
+    def finalize(self, timers: List[Timer]):
+        # TODO make this do something
+        pass
 
 
 @dataclasses.dataclass  # type: ignore

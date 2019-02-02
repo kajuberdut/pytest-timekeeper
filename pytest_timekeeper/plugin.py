@@ -1,38 +1,48 @@
-from typing import List
-
 import pytest
 
-import dataclasses
-from pytest_timekeeper.timer import Timer
-from pytest_timekeeper.writers import Writer
-
-from pytest_timekeeper import get_writer
-
-
-@dataclasses.dataclass
-class TimeKeeper:
-    writer: Writer = dataclasses.field(default_factory=get_writer)
-    timers: List[Timer] = dataclasses.field(default_factory=list)
-
-    def get_timer(self, test_name, test_version):
-        timer = Timer(test_name=test_name, test_version=test_version)
-        self.timers.append(timer)
-        return timer
-
-    def finalize(self):
-        self.writer.finalize(self.timers)
+from pytest_timekeeper.keeper import TimeKeeper
+from pytest_timekeeper.monitor import Monitor
+from pytest_timekeeper.writers import PytestReport
+from pytest_timekeeper import hookspec
 
 
-@pytest.yield_fixture(scope="session")
-def keeper():
-    k = TimeKeeper()
-    yield k
-    k.finalize()
+@pytest.mark.tryfirst
+def pytest_configure(config):
+    config._timekeeper = TimeKeeper(config)
+
+
+def pytest_sessionstart(session):
+    session.config._timekeeper.start_monitor()
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_sessionfinish(session, exitstatus):
+    session.config._timekeeper.finalize()
+    yield
+
+
+def pytest_addhooks(pluginmanager):
+
+    method = getattr(pluginmanager, "add_hookspecs", None)
+    if method is None:
+        method = pluginmanager.addhooks
+    method(hookspec)
+
+
+def pytest_timekeeper_set_writer():
+    writer = PytestReport()
+    return writer
+
+
+def pytest_timekeeper_set_monitor():
+    monitor = Monitor()
+    return monitor
 
 
 @pytest.fixture(scope="function")
-def timekeeper(keeper, request):
+def timekeeper(request):
     f = request.function
+    keeper = request.config._timekeeper
 
     def get_timer():
         if not hasattr(f, "_version"):
