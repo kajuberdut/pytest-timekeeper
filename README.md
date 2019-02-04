@@ -16,20 +16,20 @@ Here's a test showing the basic functionality:
 
 ```python
 
-    import time
+    from time import sleep
 
     def test_timer(timekeeper):
         timer = timekeeper() # Use the factory to make a timer.
         # You could do additional setup here before starting your timer.
         timer.start() # Starts the timer
-        time.sleep(1) # Do the parts of your test you want to time
+        sleep(1) # Do the parts of your test you want to time
         timer.stop() # Stop the timer
         # Additional non-timed parts of this test would go here.
 ```
 
-Because timekeeper is a factory that produces timers, it will play nice with tests that run multiple times such as tests that have parameterized fixtures or tests using Hypothesis to generate test data.
+Timekeeper is a factory that produces timers, this allows it to play nicely with tests that run multiple times such as tests that have parameterized fixtures or tests using Hypothesis to generate test data.
 
-The name of the calling function, and it's start and stop times, any notes you add, and optional system information, will be written to the configured weriter the end of all tests by default. To customize this see [Customizing Output](#customizing-output)
+The name of the calling function, and it's start and stop times, any notes you add, and optional system information, are stored in the timer to be written to the configured writer(s) the end of all tests. To customize this see [Customizing Output](#customizing-output)
 
 ## Multiple Timers, annotated times, and test versions.
 
@@ -65,7 +65,8 @@ The version wrapper is a utility function to help keep track of when your tests 
 
 ## Customizing Output
 
-After all tests are run pytest_timekeeper call the finalize() method of any Writer object that have been added through hooks in conftest.py. By defaults a writer is set to output to the pytest summary report. However, pytest_timekeeper has several built-in writers and supports you writing your own.
+After all tests complete pytest_timekeeper calls the finalize() method of any Writer object(s) that have been added through hooks in conftest.py.
+By defaults a writer is set to output to the pytest summary report. However, pytest_timekeeper has several built-in writers and supports you writing your own.
 
 Here is an example of using the built in PostWriter to post results as json to a web address.
 
