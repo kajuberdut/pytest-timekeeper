@@ -1,12 +1,12 @@
-import ujson as json
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Dict, List, Optional, Union, Any
 
 import requests
 
 import dataclasses
+import ujson as json
 from pytest_timekeeper.keeper import TimeKeeper
 
 
@@ -68,7 +68,7 @@ class PytestReport(Writer):
     def finalize(self, keeper: TimeKeeper):
         for timer in keeper.timers:
             line_string = json.dumps(timer.asdict())
-            keeper.report_lines = line_string
+            keeper.report_line(line_string)
 
 
 @dataclasses.dataclass  # type: ignore
@@ -80,10 +80,49 @@ class PostWriter(Writer):
     post_address: the full URI of the end point to which json should be posted.
     """
 
-    post_address: str
+    base_url: str
+    test_times_path: Optional[str] = None
+    sys_info_path: Optional[str] = None
+    state_history_path: Optional[str] = None
     serializer: Callable = json.dumps
 
+    def urlify(self, *args):
+        return "/".join([a.strip("/") for a in [self.base_url] + list(args)])
+
+    @property
+    def times_url(self):
+        if self.test_times_path is None:
+            return self.base_url
+        else:
+            return self.urlify(self.test_times_path)
+
+    @property
+    def sys_info_url(self):
+        if self.sys_info_path is None:
+            return None
+        else:
+            return self.urlify(self.sys_info_path)
+
+    @property
+    def state_history_url(self):
+        if self.state_history_path is None:
+            return None
+        else:
+            return self.urlify(self.state_history_path)
+
+    def post(self, url: str, data: Union[List[Any], Dict[str, Any]]):
+        return requests.post(url, json=self.serializer(data))
+
     def finalize(self, keeper: TimeKeeper):
-        serialized = self.serializer([dataclasses.asdict(t) for t in keeper.timers])
-        r = requests.post(self.post_address, json=serialized)
-        keeper.report_lines(f"[{r.status_code}] Post to {self.post_address}")
+        r = self.post(self.times_url, keeper.timer_dicts)
+        keeper.report_line(f"[{r.status_code}] {self.times_url}")
+
+        sys_info = keeper.monitor.sys_info
+        if self.sys_info_url and sys_info:
+            r = self.post(self.sys_info_url, sys_info)
+            keeper.report_line(f"[{r.status_code}] {self.sys_info_url}")
+
+        state_history = keeper.monitor.sys_state_history
+        if self.state_history_url and state_history:
+            r = self.post(self.state_history_url, state_history)
+            keeper.report_line(f"[{r.status_code}] {self.state_history_url}")

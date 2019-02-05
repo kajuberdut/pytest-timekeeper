@@ -36,13 +36,17 @@ class TimeKeeper:
         for w in writers:
             w.finalize(self)
 
-    def report(self, tr: TerminalReporter):
-        for line in self.report_lines:
+    def write_report(self, tr: TerminalReporter):
+        for line in self.report:
             tr.write_line(line)
 
     @property
     def timers(self):
         return self._timers
+
+    @property
+    def timer_dicts(self):
+        return [t.asdict() for t in self._timers]
 
     @property
     def monitor(self):
@@ -57,9 +61,8 @@ class TimeKeeper:
         return self.config.hook
 
     @property
-    def report_lines(self):
+    def report(self):
         return self._report_lines
 
-    @report_lines.setter
-    def report_lines(self, line):
+    def report_line(self, line):
         self._report_lines.append(line)

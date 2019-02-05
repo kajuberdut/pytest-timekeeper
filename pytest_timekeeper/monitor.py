@@ -11,7 +11,7 @@ import psutil
 import dataclasses
 
 
-def get_machine_state() -> Dict[str, Any]:
+def get_sys_state() -> Dict[str, Any]:
     current, minimum, maximum = psutil.cpu_freq()
     total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
         psutil.virtual_memory()
@@ -24,7 +24,7 @@ def get_machine_state() -> Dict[str, Any]:
     }
 
 
-def get_machine_info() -> Dict[str, Any]:
+def get_sys_info() -> Dict[str, Any]:
     current, minimum, maximum = psutil.cpu_freq()
     total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
         psutil.virtual_memory()
@@ -49,15 +49,15 @@ def get_machine_info() -> Dict[str, Any]:
 
 def state_farmer(q: Queue, exit_receiever: Connection, interval: int = 5):
     while not exit_receiever.poll():
-        q.put(get_machine_state())
+        q.put(get_sys_state())
         time.sleep(interval)
 
 
 @dataclasses.dataclass
 class Monitor:
     interval: int = 5
-    sys_info: Optional[Dict[str, Any]] = None
-    state: List = dataclasses.field(default_factory=list)
+    _sys_info: Optional[Dict[str, Any]] = None
+    _state: List = dataclasses.field(default_factory=list)
     queu: Optional[SimpleQueue] = None
     process: Optional[Process] = None
     exit_sender: Optional[Connection] = None
@@ -65,7 +65,7 @@ class Monitor:
 
     def start(self):
         self.queue = SimpleQueue()
-        self.sys_info = get_machine_info()
+        self._sys_info = get_sys_info()
         self.exit_receiever, self.exit_sender = Pipe(duplex=False)
         self.process = Process(
             target=state_farmer, args=(self.queue, self.exit_receiever, self.interval)
@@ -75,5 +75,15 @@ class Monitor:
     def stop(self):
         self.exit_sender.send(True)
         while not self.queue.empty():
-            self.state.append(self.queue.get())
+            self._state.append(self.queue.get())
         self.process.join()
+
+    @property
+    def sys_info(self):
+        if self._sys_info is None:
+            self._sys_info = get_sys_info()
+        return self._sys_info
+
+    @property
+    def sys_state_history(self):
+        return self._state

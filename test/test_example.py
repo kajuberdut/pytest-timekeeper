@@ -1,4 +1,5 @@
 from pytest_timekeeper.utility import version
+import time
 
 
 @version(2)
@@ -14,6 +15,7 @@ def test_timer(timekeeper):
     inner_timer.start()
     print("Query the database.")
     inner_timer.stop()
+    time.sleep(5)
     print("Close connection.")
     outer_timer.stop()
-
+    print(outer_timer.end_time_ns)

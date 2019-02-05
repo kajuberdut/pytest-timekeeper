@@ -1,21 +1,13 @@
-# from typing import List
-
-# from pytest_timekeeper.timer import Timer
-# from pytest_timekeeper.writers import Writer, PytestReport
+from pytest_timekeeper.writers import PostWriter
 
 pytest_plugins = ["pytester"]
 
 
-# def pytest_timekeeper_set_writer():
-#     class PrintWriter(Writer):
-#         def finalize(self, timers: List[Timer]):
-#             for t in timers:
-#                 print(t)
-
-#     writer = PrintWriter()
-#     return writer
-
-
-# def pytest_timekeeper_add_writer():
-#     reporter = PytestReport()
-#     return reporter
+def pytest_timekeeper_add_writer():
+    reporter = PostWriter(
+        base_url="https://ptsv2.com/t/timer",
+        test_times_path="post",
+        sys_info_path="post",
+        state_history_path="post",
+    )
+    return reporter
