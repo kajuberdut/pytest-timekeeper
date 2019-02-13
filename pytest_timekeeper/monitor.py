@@ -5,46 +5,59 @@ from hashlib import md5
 from multiprocessing import Pipe, Process, Queue, SimpleQueue
 from multiprocessing.connection import Connection
 from typing import Any, Dict, List, Optional
-
-import psutil
-
+import warnings
 import dataclasses
 
-
-def get_sys_state() -> Dict[str, Any]:
-    current, minimum, maximum = psutil.cpu_freq()
-    total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
-        psutil.virtual_memory()
+# psutil is an optional dependency
+try:
+    import psutil
+except ImportError:
+    warnings.warn(
+        "psutil is not installed. System info functionality will not be available."
     )
-    return {
-        "cpu_percent": psutil.cpu_percent(),
-        "freq_current": round(current),
-        "mem_percent": round(available / total, 2),
-        "timestamp_ns": time.time_ns(),
-    }
+    psutil = None
 
 
-def get_sys_info() -> Dict[str, Any]:
-    current, minimum, maximum = psutil.cpu_freq()
-    total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
-        psutil.virtual_memory()
-    )
-    python_implimentation = platform.python_implementation()
-    python_version = platform.python_version()
-    hostname = socket.gethostname()
-    return {
-        "threads": psutil.cpu_count(),  # Threads
-        "cores": psutil.cpu_count(logical=False),  # Physical CPU
-        "freq_min": round(minimum),
-        "freq_max": round(maximum),
-        "hostname": hostname,
-        "mem_total": total,
-        "python_implimentation": python_implimentation,
-        "python_version": python_version,
-        "hash": md5(
-            f"{hostname}{psutil.cpu_count(logical=False)}{total}{python_implimentation}{python_version}".encode()
-        ).hexdigest(),
-    }
+def get_sys_state() -> Optional[Dict[str, Any]]:
+    if psutil is None:
+        return None
+    else:
+        current, minimum, maximum = psutil.cpu_freq()
+        total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
+            psutil.virtual_memory()
+        )
+        return {
+            "cpu_percent": psutil.cpu_percent(),
+            "freq_current": round(current),
+            "mem_percent": round(available / total, 2),
+            "timestamp_ns": time.time_ns(),
+        }
+
+
+def get_sys_info() -> Optional[Dict[str, Any]]:
+    if psutil is None:
+        return None
+    else:
+        current, minimum, maximum = psutil.cpu_freq()
+        total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
+            psutil.virtual_memory()
+        )
+        python_implimentation = platform.python_implementation()
+        python_version = platform.python_version()
+        hostname = socket.gethostname()
+        return {
+            "threads": psutil.cpu_count(),  # Threads
+            "cores": psutil.cpu_count(logical=False),  # Physical CPU
+            "freq_min": round(minimum),
+            "freq_max": round(maximum),
+            "hostname": hostname,
+            "mem_total": total,
+            "python_implimentation": python_implimentation,
+            "python_version": python_version,
+            "hash": md5(
+                f"{hostname}{psutil.cpu_count(logical=False)}{total}{python_implimentation}{python_version}".encode()
+            ).hexdigest(),
+        }
 
 
 def state_farmer(q: Queue, exit_receiever: Connection, interval: int = 5):
@@ -57,7 +70,7 @@ def state_farmer(q: Queue, exit_receiever: Connection, interval: int = 5):
 class Monitor:
     interval: int = 5
     _sys_info: Optional[Dict[str, Any]] = None
-    _state: List = dataclasses.field(default_factory=list)
+    _state: List[Dict[str, Any]] = dataclasses.field(default_factory=list)
     queu: Optional[SimpleQueue] = None
     process: Optional[Process] = None
     exit_sender: Optional[Connection] = None
@@ -87,3 +100,9 @@ class Monitor:
     @property
     def sys_state_history(self):
         return self._state
+
+
+if __name__ == "__Main__":
+    m = Monitor()
+    m.start()
+    m.stop()
