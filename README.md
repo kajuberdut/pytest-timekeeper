@@ -70,6 +70,8 @@ By defaults a writer is set to output to the pytest summary report. However, pyt
 
 Here is an example of using the built in PostWriter to post results as json to a web address.
 
+https://ptsv2.com provides an easy location to test this functionality without having to make a webserver to accept the data.
+
 ```python
 from pytest_timekeeper.writers import PostWriter
 

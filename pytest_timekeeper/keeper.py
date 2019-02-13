@@ -29,6 +29,35 @@ class TimeKeeper:
         if self._monitor:
             self._monitor.stop()
 
+    @property
+    def monitored(self):
+        """ True if an instance of Monitor was setup. """
+        return isinstance(self._monitor, Monitor)
+
+    @property
+    def sys_info(self):
+        if self.monitored:
+            return self._monitor.sys_info
+        else:
+            return None
+
+    @property
+    def sys_state_history(self):
+        if self.monitored:
+            return self._monitor.sys_state_history
+        else:
+            return None
+
+    @property
+    def sys_dict(self):
+        return {
+            "system": {"info": self.sys_info, "state_history": self.sys_state_history}
+        }
+
+    @property
+    def data(self):
+        return {**self.sys_dict, **self.timer_dict}
+
     def finalize(self):
         self.stop_monitor()
         writer = self.hooks.pytest_timekeeper_set_writer()
@@ -45,8 +74,8 @@ class TimeKeeper:
         return self._timers
 
     @property
-    def timer_dicts(self):
-        return [t.asdict() for t in self._timers]
+    def timer_dict(self):
+        return {"function_timers": [t.asdict() for t in self._timers]}
 
     @property
     def monitor(self):
