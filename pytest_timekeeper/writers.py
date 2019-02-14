@@ -1,13 +1,17 @@
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Union, Any
-
-import requests
+from typing import Any, Callable, Dict, List, Union
 
 import dataclasses
 import ujson as json
 from pytest_timekeeper.keeper import TimeKeeper
+
+# requests is an optional dependency
+try:
+    import requests
+except ImportError:
+    requests = None
 
 
 class Writer(ABC):
@@ -84,6 +88,10 @@ class PostWriter(Writer):
 
     url: str
     serializer: Callable = json.dumps
+
+    def __post_init__(self):
+        if requests is None:
+            raise ImportError("Requests library is required to use PostWriter.")
 
     def post(self, url: str, data: Union[List[Any], Dict[str, Any]]):
         return
