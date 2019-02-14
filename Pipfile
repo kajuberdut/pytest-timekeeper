@@ -8,11 +8,13 @@ ujson = "*"
 requests = "*"
 psutil = "*"
 
+
 [dev-packages]
 black = "*"
-pytest = "==3.10.1"
 "flake8" = "*"
 mypy = "*"
+pytest = "*"
+pytest-timekeeper = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"
