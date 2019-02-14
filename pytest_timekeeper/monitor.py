@@ -77,19 +77,22 @@ class Monitor:
     exit_receiever: Optional[Connection] = None
 
     def start(self):
-        self.queue = SimpleQueue()
-        self._sys_info = get_sys_info()
-        self.exit_receiever, self.exit_sender = Pipe(duplex=False)
-        self.process = Process(
-            target=state_farmer, args=(self.queue, self.exit_receiever, self.interval)
-        )
-        self.process.start()
+        if psutil is not None:
+            self.queue = SimpleQueue()
+            self._sys_info = get_sys_info()
+            self.exit_receiever, self.exit_sender = Pipe(duplex=False)
+            self.process = Process(
+                target=state_farmer,
+                args=(self.queue, self.exit_receiever, self.interval),
+            )
+            self.process.start()
 
     def stop(self):
-        self.exit_sender.send(True)
-        while not self.queue.empty():
-            self._state.append(self.queue.get())
-        self.process.join()
+        if psutil is not None:
+            self.exit_sender.send(True)
+            while not self.queue.empty():
+                self._state.append(self.queue.get())
+            self.process.join()
 
     @property
     def sys_info(self):
