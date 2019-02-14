@@ -5,9 +5,8 @@ name = "pypi"
 
 [packages]
 ujson = "*"
-requests = "*"
 psutil = "*"
-
+requests = "*"
 
 [dev-packages]
 black = "*"

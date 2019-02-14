@@ -6,7 +6,7 @@ pytest_plugins = ["pytester"]
 
 
 def pytest_timekeeper_add_writer():
-    reporter = PostWriter(url="https://ptsv2.com/t/timer/post")
+    reporter = PostWriter(url="")
     return reporter
 
 
