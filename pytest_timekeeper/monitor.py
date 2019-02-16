@@ -18,9 +18,9 @@ except ImportError:
     psutil = None
 
 
-def get_sys_state() -> Optional[Dict[str, Any]]:
+def get_sys_state() -> Dict[str, Any]:
     if psutil is None:
-        return None
+        return {}
     else:
         current, minimum, maximum = psutil.cpu_freq()
         total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
@@ -34,9 +34,9 @@ def get_sys_state() -> Optional[Dict[str, Any]]:
         }
 
 
-def get_sys_info() -> Optional[Dict[str, Any]]:
+def get_sys_info() -> Dict[str, Any]:
     if psutil is None:
-        return None
+        return {}
     else:
         current, minimum, maximum = psutil.cpu_freq()
         total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
@@ -69,7 +69,7 @@ def state_farmer(q: Queue, exit_receiever: Connection, interval: int = 5):
 @dataclasses.dataclass
 class Monitor:
     interval: int = 5
-    _sys_info: Optional[Dict[str, Any]] = None
+    _sys_info: Dict[str, Any] = dataclasses.field(default_factory=dict)
     _state: List[Dict[str, Any]] = dataclasses.field(default_factory=list)
     queu: Optional[SimpleQueue] = None
     process: Optional[Process] = None
@@ -95,13 +95,13 @@ class Monitor:
             self.process.join()
 
     @property
-    def sys_info(self):
-        if self._sys_info is None:
+    def sys_info(self) -> Dict[str, None]:
+        if not self._sys_info:
             self._sys_info = get_sys_info()
-        return self._sys_info
+        return self._sys_info  # type: ignore
 
     @property
-    def sys_state_history(self):
+    def sys_state_history(self) -> List:
         return self._state
 
 

@@ -11,7 +11,7 @@ from pytest_timekeeper.keeper import TimeKeeper
 try:
     import requests
 except ImportError:
-    requests = None
+    requests = None  # type: ignore
 
 
 class Writer(ABC):
@@ -22,24 +22,30 @@ class Writer(ABC):
 
     @abstractmethod
     def finalize(self, keeper: TimeKeeper):
+        """
+        This method should handle persisting pytest_timekeepers data.
+        The primary data object to be persisted is keeper.data containing both system and timer info.
+        To handle system info and timers seperately use keeper.timer_dict, keeper.sys_dict.
+        For more granular control over data and format examine the properties of pytest_timekeeper.keeper.Keeper
+        """
         pass
 
 
 @dataclasses.dataclass  # type: ignore
 class Serialize(Writer):
     """
-    A writer that outputs serialized time data to a file.
+    A writer that outputs serialized data to a file.
 
     Inputs:
     filepath: a writeable filepath.
-    serializer: a callable able to serialize a object of type List[Dict]
+    serializer: a callable able to serialize a object of type Dict[str, Any]]
     """
 
     filepath: str
-    serializer: Callable
+    serializer: Callable[[Dict[str, Any]], str]
 
-    def serialized(self, keeper):
-        return self.serializer(keeper.data)
+    def serialized(self, keeper) -> str:
+        return self.serializer(keeper.data)  # type: ignore
 
     def finalize(self, keeper: TimeKeeper):
         with open(self.filepath, "w") as fh:
@@ -53,13 +59,11 @@ def default_json_file():
 @dataclasses.dataclass  # type: ignore
 class JsonWriter(Serialize):
     """
-    A writer that outputs json serialized time data to a file.
+    A writer that outputs json serialized data to a file.
 
     Inputs:
     filepath (optional): a writeable filepath.
         Default: Path().cdw()/execution_times_{timestamp}.json
-    serializer (optional): a callable able to serialize a object of type List[Dict]
-        Default: json.dumps
     """
 
     filepath: str = dataclasses.field(default_factory=default_json_file)
@@ -72,8 +76,10 @@ class PytestReport(Writer):
     """
 
     def finalize(self, keeper: TimeKeeper):
+        if keeper.monitored:
+            keeper.report_line(json.dumps(keeper.sys_dict, indent=2))
         for timer in keeper.timers:
-            line_string = json.dumps(timer.asdict())
+            line_string = "\t" + json.dumps(timer.asdict(), indent=2)
             keeper.report_line(line_string)
 
 
