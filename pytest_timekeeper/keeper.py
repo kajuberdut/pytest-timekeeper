@@ -1,4 +1,5 @@
 # from pytest_timekeeper.writers import Writer, JsonWriter
+from statistics import mean
 from typing import Any, Dict, List, Optional
 
 import _pytest.config as pytest_config
@@ -11,15 +12,34 @@ from pytest_timekeeper.timer import Timer
 
 @dataclasses.dataclass
 class TimeKeeper:
-    _config: pytest_config.Config
+    _config: pytest_config.Config = None
+    warmup_loops: int = 5
+    calibration_loops: int = 15
     _timers: List[Timer] = dataclasses.field(default_factory=list)
+    _calibration: List[int] = dataclasses.field(default_factory=list)
     _monitor: Optional[Monitor] = None
     _report_lines: List[str] = dataclasses.field(default_factory=list)
+
+    def __post_init__(self):
+        self.calibrate()
 
     def get_timer(self, test_name: str, test_version: Any) -> Timer:
         timer = Timer(test_name=test_name, test_version=test_version)
         self._timers.append(timer)
         return timer
+
+    def run_calibration(self, save=True):
+        timer = Timer(test_name=None)
+        timer.start()
+        timer.stop()
+        if save:
+            self._calibration.append(timer.runtime_ns)
+
+    def calibrate(self):
+        for i in range(self.warmup_loops):
+            self.run_calibration(save=False)
+        for i in range(self.calibration_loops):
+            self.run_calibration(save=True)
 
     def start_monitor(self) -> None:
         self._monitor = self.config.hook.pytest_timekeeper_set_monitor()
@@ -78,9 +98,21 @@ class TimeKeeper:
         return {"function_timers": [t.asdict() for t in self._timers]}
 
     @property
+    def calibration_dict(self) -> Dict[str, Any]:
+        """ A dictionary containing calibration information about the test session
+            {"runs": List[int], "mean": int}
+        """
+        return {
+            "calibration": {
+                "runs": self._calibration,
+                "mean": round(mean(self._calibration)),
+            }
+        }
+
+    @property
     def data(self):
         """ A dictionary containing Keeper.sys_dict and Keeeper.timer_dict """
-        return {**self.sys_dict, **self.timer_dict}
+        return {**self.sys_dict, **self.timer_dict, **self.calibration_dict}
 
     def finalize(self):
         self.stop_monitor()

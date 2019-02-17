@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name="pytest-timekeeper",
-    version="0.0.4",
+    version="0.0.5",
     author="Patrick Shechet",
     author_email="patrick.shechet@gmail.com",
     description=("Pytest timeing framework"),
