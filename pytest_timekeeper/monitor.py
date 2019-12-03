@@ -23,13 +23,11 @@ def get_sys_state() -> Dict[str, Any]:
         return {}
     else:
         current, minimum, maximum = psutil.cpu_freq()
-        total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
-            psutil.virtual_memory()
-        )
+        mem = psutil.virtual_memory()
         return {
             "cpu_percent": psutil.cpu_percent(),
             "freq_current": round(current),
-            "mem_percent": round(available / total, 2),
+            "mem_percent": round(mem.available / mem.total, 2),
             "timestamp_ns": time.time_ns(),
         }
 
@@ -39,9 +37,7 @@ def get_sys_info() -> Dict[str, Any]:
         return {}
     else:
         current, minimum, maximum = psutil.cpu_freq()
-        total, available, percent, used, free, active, inactive, buffers, cached, shared, slab = (
-            psutil.virtual_memory()
-        )
+        mem = psutil.virtual_memory()
         python_implimentation = platform.python_implementation()
         python_version = platform.python_version()
         hostname = socket.gethostname()
@@ -51,11 +47,11 @@ def get_sys_info() -> Dict[str, Any]:
             "freq_min": round(minimum),
             "freq_max": round(maximum),
             "hostname": hostname,
-            "mem_total": total,
+            "mem_total": mem.total,
             "python_implimentation": python_implimentation,
             "python_version": python_version,
             "hash": md5(
-                f"{hostname}{psutil.cpu_count(logical=False)}{total}{python_implimentation}{python_version}".encode()
+                f"{hostname}{psutil.cpu_count(logical=False)}{mem.total}{python_implimentation}{python_version}".encode()
             ).hexdigest(),
         }
 
