@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name="pytest-timekeeper",
-    version="0.0.5",
+    version="0.0.6",
     author="Patrick Shechet",
     author_email="patrick.shechet@gmail.com",
     description=("Pytest timeing framework"),
@@ -24,7 +24,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: BSD License",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3 :: Only",
         "Framework :: Pytest",
     ],  # the following makes a plugin available to pytest
