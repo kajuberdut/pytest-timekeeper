@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Union
 
 import dataclasses
-import ujson as json
+import json
 from pytest_timekeeper.keeper import TimeKeeper
 
 # requests is an optional dependency
